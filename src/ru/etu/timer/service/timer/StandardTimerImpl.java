@@ -1,19 +1,32 @@
-package ru.etu.timer.service;
+package ru.etu.timer.service.timer;
 
+import ru.etu.timer.dto.TimerData;
+import ru.etu.timer.utils.TimeContainer;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 public class StandardTimerImpl implements Timer {
     private final int value;
     private volatile boolean isPaused;
     private final Runner threadRunner;
-    private final Logger LOGGER = Logger.getLogger("ru.etu.timer.service.StandardTimerImpl");
+    private final Logger LOGGER = Logger.getLogger("ru.etu.timer.service.timer.StandardTimerImpl");
+    private TimerData.Builder dataBuilder;
+    private final Consumer<TimerData> callback;
 
-    public StandardTimerImpl(int secondsScheduled) {
-        this.value = secondsScheduled;
-        this.isPaused = true;
-        this.threadRunner = new Runner();
-        this.threadRunner.start();
+    public StandardTimerImpl(int secondsScheduled, Consumer<TimerData> callback) {
+        value = secondsScheduled;
+        isPaused = true;
+        threadRunner = new Runner();
+        threadRunner.start();
         LOGGER.info("StandardTimerImpl has been created");
+        dataBuilder = new TimerData.Builder();
+        dataBuilder = dataBuilder.setId(UUID.randomUUID().toString())
+                .setStartDateTime(LocalDateTime.now())
+                .setValue(new TimeContainer(secondsScheduled));
+        this.callback = callback;
     }
 
     @Override
@@ -33,6 +46,7 @@ public class StandardTimerImpl implements Timer {
         if (!threadRunner.isCompleted)
             threadRunner.interrupt();
         LOGGER.info("StandardTimerImpl has been ended");
+        callback.accept(dataBuilder.setEndDateTime(LocalDateTime.now()).build());
     }
 
     private class Runner extends Thread {
@@ -46,7 +60,7 @@ public class StandardTimerImpl implements Timer {
                     while (isPaused) {
                         Thread.onSpinWait();
                     }
-                    LOGGER.info("Seconds passed: " + secondsScheduled); // rewrite!!
+                    LOGGER.info("Seconds remain: " + secondsScheduled); // rewrite!!
                     Thread.sleep(1000);
                     secondsScheduled--;
                 }

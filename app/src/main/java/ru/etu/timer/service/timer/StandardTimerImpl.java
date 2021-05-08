@@ -2,11 +2,11 @@ package ru.etu.timer.service.timer;
 
 
 import ru.etu.timer.dto.TimerData;
-import ru.etu.timer.utils.TimeContainer;
+import ru.etu.timer.dto.TimeContainer;
+import ru.etu.timer.utils.TimerEventListener;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 public class StandardTimerImpl implements Timer {
@@ -15,9 +15,9 @@ public class StandardTimerImpl implements Timer {
     private final Runner threadRunner;
     private final Logger LOGGER = Logger.getLogger("ru.etu.timer.service.timer.StandardTimerImpl");
     private TimerData.Builder dataBuilder;
-    private final Consumer<TimerData> callback;
+    private final TimerEventListener eventListener;
 
-    public StandardTimerImpl(int secondsScheduled, Consumer<TimerData> callback) {
+    public StandardTimerImpl(int secondsScheduled, TimerEventListener eventListener) {
         value = secondsScheduled;
         isPaused = true;
         threadRunner = new Runner();
@@ -27,7 +27,7 @@ public class StandardTimerImpl implements Timer {
         dataBuilder = dataBuilder.setId(UUID.randomUUID().toString())
                 .setStartDateTime(LocalDateTime.now())
                 .setValue(new TimeContainer(secondsScheduled));
-        this.callback = callback;
+        this.eventListener = eventListener;
     }
 
     @Override
@@ -47,7 +47,7 @@ public class StandardTimerImpl implements Timer {
         if (!threadRunner.isCompleted)
             threadRunner.interrupt();
         LOGGER.info("StandardTimerImpl has been ended");
-        callback.accept(dataBuilder.setEndDateTime(LocalDateTime.now()).build());
+        eventListener.finish(dataBuilder.setEndDateTime(LocalDateTime.now()).build());
     }
 
     private class Runner extends Thread {
@@ -59,10 +59,12 @@ public class StandardTimerImpl implements Timer {
             try {
                 while (secondsScheduled > 0) {
                     while (isPaused) {}
+                    eventListener.update(new TimeContainer(secondsScheduled));
                     LOGGER.info("Seconds remain: " + secondsScheduled); // rewrite!!
                     Thread.sleep(1000);
                     secondsScheduled--;
                 }
+                eventListener.update(new TimeContainer(secondsScheduled));
             } catch (InterruptedException ignored) {
             }
             isCompleted = true;

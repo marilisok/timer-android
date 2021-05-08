@@ -1,4 +1,4 @@
-package ru.etu.timer.utils;
+package ru.etu.timer.dto;
 
 import android.annotation.SuppressLint;
 

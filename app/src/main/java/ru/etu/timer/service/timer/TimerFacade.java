@@ -1,5 +1,9 @@
 package ru.etu.timer.service.timer;
 
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
+
 import ru.etu.timer.dto.TimerData;
 import ru.etu.timer.service.notifier.Notifier;
 import ru.etu.timer.service.storage.Storage;
@@ -10,6 +14,7 @@ public class TimerFacade implements Timer {
     private final Notifier notifier;
     private final Storage storage;
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public TimerFacade(TimeContainer timeScheduled, Notifier notifier, Storage storage) {
         this.timer = new StandardTimerImpl(timeScheduled.toSeconds(), this::finish);
         this.notifier = notifier;

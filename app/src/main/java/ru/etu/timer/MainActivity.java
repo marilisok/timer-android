@@ -24,11 +24,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Context context = getApplicationContext();
         SharedPreferences sh = context.getSharedPreferences("TimerHistory", Context.MODE_PRIVATE);
-        Storage storage = new SharedPreferencesStorage(sh);
-        TextView tvId = (TextView) findViewById(R.id.tw);
-        Timer timer = new TimerFacade(new TimeContainer(3),
-                System.out::println, storage);
-        timer.start();
     }
 
 }

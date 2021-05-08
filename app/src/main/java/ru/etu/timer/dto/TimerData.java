@@ -1,5 +1,8 @@
 package ru.etu.timer.dto;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import ru.etu.timer.utils.TimeContainer;
 
 import java.time.LocalDateTime;
@@ -20,7 +23,6 @@ public class TimerData {
     }
 
 
-
     public TimeContainer getValue() {
         return value;
     }
@@ -35,6 +37,24 @@ public class TimerData {
 
     public String getId() {
         return id;
+    }
+
+    public String toJsonString() throws JSONException {
+        JSONObject container = new JSONObject();
+        container.put("id", id);
+        container.put("start", startDateTime);
+        container.put("end", endDateTime);
+        container.put("value", value.toFormattedString());
+        return container.toString();
+    }
+
+    public static TimerData fromJsonString(String jsonString) throws JSONException {
+        JSONObject container = new JSONObject(jsonString);
+        return new TimerData(container.getString("id"),
+                LocalDateTime.parse(container.getString("start")),
+                LocalDateTime.parse(container.getString("end")),
+                TimeContainer.fromFormattedString(container.getString("value"))
+        );
     }
 
     public static class Builder {

@@ -1,8 +1,5 @@
 package ru.etu.timer.service.timer;
 
-import android.os.Build;
-
-import androidx.annotation.RequiresApi;
 
 import ru.etu.timer.dto.TimerData;
 import ru.etu.timer.utils.TimeContainer;
@@ -20,7 +17,6 @@ public class StandardTimerImpl implements Timer {
     private TimerData.Builder dataBuilder;
     private final Consumer<TimerData> callback;
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public StandardTimerImpl(int secondsScheduled, Consumer<TimerData> callback) {
         value = secondsScheduled;
         isPaused = true;
@@ -46,7 +42,6 @@ public class StandardTimerImpl implements Timer {
         LOGGER.info("StandardTimerImpl has been paused");
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void end() {
         if (!threadRunner.isCompleted)
@@ -58,12 +53,11 @@ public class StandardTimerImpl implements Timer {
     private class Runner extends Thread {
         public boolean isCompleted = false;
 
-        @RequiresApi(api = Build.VERSION_CODES.O)
         @Override
         public void run() {
             int secondsScheduled = value;
             try {
-                while (secondsScheduled >  0) {
+                while (secondsScheduled > 0) {
                     while (isPaused) {}
                     LOGGER.info("Seconds remain: " + secondsScheduled); // rewrite!!
                     Thread.sleep(1000);

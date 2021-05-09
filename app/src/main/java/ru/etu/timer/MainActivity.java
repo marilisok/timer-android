@@ -1,32 +1,44 @@
 package ru.etu.timer;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
 
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
 
+import javax.inject.Inject;
+
+import ru.etu.timer.di.components.DaggerContextComponent;
+import ru.etu.timer.di.modules.ContextModule;
+import ru.etu.timer.service.notifier.NotificationSender;
 import ru.etu.timer.service.notifier.Notifier;
-import ru.etu.timer.service.notifier.SimpleOnFinishNotifier;
-import ru.etu.timer.ui.storage.SharedPreferencesStorage;
 import ru.etu.timer.service.storage.Storage;
 import ru.etu.timer.service.timer.Timer;
 import ru.etu.timer.service.timer.TimerFacade;
 import ru.etu.timer.dto.TimeContainer;
-import ru.etu.timer.service.notifier.NotificationSender;
-import ru.etu.timer.ui.notifications.TimerOnFinishNotifier;
 import ru.etu.timer.utils.ChainedTimerEventListenerBuilder;
 import ru.etu.timer.utils.TimerEventListenerBuilder;
 import ru.etu.timer.viewmodel.TimerViewModel;
-import ru.etu.timer.viewmodel.TimerViewModelFactory;
+import ru.etu.timer.viewmodel.TimerViewModelFacade;
 
 public class MainActivity extends AppCompatActivity {
+
+    @Inject
+    Notifier notifier;
+
+    @Inject
+    Storage storage;
+
+    @Inject
+    NotificationSender sender;
+
+    TimerViewModel timerViewModel;
 
     @Override
     protected void onStart() {
         super.onStart();
-        TimerOnFinishNotifier.createChannel(this);
+        makeInjection();
+        sender.createChannel(this);
     }
 
     @Override
@@ -34,54 +46,55 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Storage storage = new SharedPreferencesStorage(this);
-
-        NotificationSender sender = new TimerOnFinishNotifier(this);
-
-        TimerViewModel mView = new ViewModelProvider(this, new TimerViewModelFactory())
-                .get(TimerViewModel.class);
-
-        TimeContainer timeScheduled = new TimeContainer(0, 0, 10);
+        timerViewModel = new TimerViewModelFacade(this).get();
 
         TextView textArea = findViewById(R.id.timerValue);
-        mView.getCurrentTimeOnClockLiveData().observe(this, timeContainer -> {
+        this.timerViewModel.getCurrentTimeOnClockLiveData().observe(this, timeContainer -> {
             textArea.setText(timeContainer.toFormattedString());
         });
 
         TextView historyArea = findViewById(R.id.history);
-        mView.getCurrentHistoryLiveData().observe(this, historyList -> {
-            // needs to be sorted by end datetime
+        this.timerViewModel.getCurrentHistoryLiveData().observe(this, historyList -> {
             historyArea.setText(historyList.get(historyList.size() - 1).getId());
         });
 
         Button startButton = (Button) findViewById(R.id.startbtn);
         startButton.setOnClickListener(btn -> {
-            Timer timer = createTimer(timeScheduled, storage, mView, sender);
-            mView.setCurrentWorkingTimer(timer);
+            Timer timer = createTimer(getTimeScheduled());
+            this.timerViewModel.setCurrentWorkingTimer(timer);
             timer.start();
-
         });
 
         Button pauseButton = (Button) findViewById(R.id.pausebtn);
         pauseButton.setOnClickListener(btn -> {
-            mView.getCurrentWorkingTimer().pause();
+            this.timerViewModel.getCurrentWorkingTimer().pause();
         });
 
         Button endButton = (Button) findViewById(R.id.endbtn);
         endButton.setOnClickListener(btn -> {
-            mView.getCurrentWorkingTimer().end();
-            mView.setCurrentTimeOnClock(new TimeContainer(0));
+            this.timerViewModel.getCurrentWorkingTimer().end();
+            this.timerViewModel.setCurrentTimeOnClock(new TimeContainer(0));
         });
 
     }
 
-    protected Timer createTimer(TimeContainer timeScheduled, Storage storage, TimerViewModel mView, NotificationSender sender) {
+    private TimeContainer getTimeScheduled() {
+        return new TimeContainer(5);
+    }
+
+    private void makeInjection() {
+        DaggerContextComponent.builder()
+                .contextModule(new ContextModule(this))
+                .build()
+                .inject(this);
+    }
+
+    protected Timer createTimer(TimeContainer timeScheduled) {
         TimerEventListenerBuilder eventListenerBuilder = new ChainedTimerEventListenerBuilder();
-        eventListenerBuilder.onUpdate(mView::setCurrentTimeOnClock);
+        eventListenerBuilder.onUpdate(timerViewModel::setCurrentTimeOnClock);
         eventListenerBuilder.onFinish(ignored -> {
-            mView.setCurrentHistory(storage.getHistory());
+            timerViewModel.setCurrentHistory(storage.getHistory());
         });
-        Notifier notifier = new SimpleOnFinishNotifier(sender);
 
         return new TimerFacade(
                 timeScheduled,

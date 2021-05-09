@@ -9,20 +9,20 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-public class StandardTimerImpl implements Timer {
+public class ThreadedTimerImpl implements Timer {
     private final int value;
     private volatile boolean isPaused;
     private final Runner threadRunner;
-    private final Logger LOGGER = Logger.getLogger("ru.etu.timer.service.timer.StandardTimerImpl");
+    private final Logger LOGGER = Logger.getLogger("ru.etu.timer.service.timer.ThreadedTimerImpl");
     private TimerData.Builder dataBuilder;
     private final TimerEventListener eventListener;
 
-    public StandardTimerImpl(int secondsScheduled, TimerEventListener eventListener) {
+    public ThreadedTimerImpl(int secondsScheduled, TimerEventListener eventListener) {
         value = secondsScheduled;
         isPaused = true;
         threadRunner = new Runner();
         threadRunner.start();
-        LOGGER.info("StandardTimerImpl has been created");
+        LOGGER.info("ThreadedTimerImpl has been created");
         dataBuilder = new TimerData.Builder();
         dataBuilder = dataBuilder.setId(UUID.randomUUID().toString())
                 .setStartDateTime(LocalDateTime.now())
@@ -33,20 +33,20 @@ public class StandardTimerImpl implements Timer {
     @Override
     public void start() {
         isPaused = false;
-        LOGGER.info("StandardTimerImpl has been started");
+        LOGGER.info("ThreadedTimerImpl has been started");
     }
 
     @Override
     public void pause() {
         isPaused = true;
-        LOGGER.info("StandardTimerImpl has been paused");
+        LOGGER.info("ThreadedTimerImpl has been paused");
     }
 
     @Override
     public void end() {
         if (!threadRunner.isCompleted)
             threadRunner.interrupt();
-        LOGGER.info("StandardTimerImpl has been ended");
+        LOGGER.info("ThreadedTimerImpl has been ended");
         eventListener.finish(dataBuilder.setEndDateTime(LocalDateTime.now()).build());
     }
 

@@ -1,16 +1,19 @@
 package ru.etu.timer.service.timer;
 
 
+import android.annotation.SuppressLint;
+
 import ru.etu.timer.dto.TimerData;
 import ru.etu.timer.dto.TimeContainer;
 import ru.etu.timer.utils.TimerEventListener;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 public class ThreadedTimerImpl implements Timer {
-    private final int value;
+    private final AtomicInteger secondsScheduled;
     private volatile boolean isPaused;
     private final Runner threadRunner;
     private final Logger LOGGER = Logger.getLogger("ru.etu.timer.service.timer.ThreadedTimerImpl");
@@ -18,7 +21,8 @@ public class ThreadedTimerImpl implements Timer {
     private final TimerEventListener eventListener;
 
     public ThreadedTimerImpl(int secondsScheduled, TimerEventListener eventListener) {
-        value = secondsScheduled;
+        this.secondsScheduled = new AtomicInteger();
+        this.secondsScheduled.set(secondsScheduled);
         isPaused = true;
         threadRunner = new Runner();
         threadRunner.start();
@@ -53,18 +57,18 @@ public class ThreadedTimerImpl implements Timer {
     private class Runner extends Thread {
         public boolean isCompleted = false;
 
+        @SuppressLint("DefaultLocale")
         @Override
         public void run() {
-            int secondsScheduled = value;
             try {
-                while (secondsScheduled > 0) {
+                while (secondsScheduled.get() > 0) {
                     while (isPaused) {}
-                    eventListener.update(new TimeContainer(secondsScheduled));
-                    LOGGER.info("Seconds remain: " + secondsScheduled); // rewrite!!
+                    eventListener.update(new TimeContainer(secondsScheduled.get()));
+                    LOGGER.info(String.format("Seconds remain: %d", secondsScheduled.get()));
                     Thread.sleep(1000);
-                    secondsScheduled--;
+                    secondsScheduled.decrementAndGet();
                 }
-                eventListener.update(new TimeContainer(secondsScheduled));
+                eventListener.update(new TimeContainer(secondsScheduled.get()));
             } catch (InterruptedException ignored) {
             }
             isCompleted = true;

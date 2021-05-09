@@ -7,6 +7,8 @@ import android.content.Context;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+import java.util.logging.Logger;
+
 import ru.etu.timer.R;
 import ru.etu.timer.service.notifier.NotificationSender;
 
@@ -14,6 +16,7 @@ public class TimerOnFinishNotificationSender implements NotificationSender {
     private final static String CHANNEL_ID = "TimerFinished";
     private final NotificationManagerCompat notificationManager;
     private NotificationCompat.Builder builder;
+    private final Logger LOGGER = Logger.getLogger("ru.etu.timer.ui.notifications");
 
     public TimerOnFinishNotificationSender(Context context) {
         notificationManager = NotificationManagerCompat.from(context);
@@ -26,6 +29,7 @@ public class TimerOnFinishNotificationSender implements NotificationSender {
     @Override
     public void send() {
         notificationManager.notify(getUniqueNotificationId(), builder.build());
+        LOGGER.info("Sent notification");
     }
 
     @Override
@@ -47,5 +51,6 @@ public class TimerOnFinishNotificationSender implements NotificationSender {
         );
         NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
         notificationManager.createNotificationChannel(channel);
+        LOGGER.info(String.format("Channel %s has been created", CHANNEL_ID));
     }
 }

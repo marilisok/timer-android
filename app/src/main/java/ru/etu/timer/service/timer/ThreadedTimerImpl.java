@@ -25,7 +25,6 @@ public class ThreadedTimerImpl implements Timer {
         this.secondsScheduled.set(secondsScheduled);
         isPaused = true;
         threadRunner = new Runner();
-        threadRunner.start();
         LOGGER.info("ThreadedTimerImpl has been created");
         dataBuilder = new TimerData.Builder();
         dataBuilder = dataBuilder.setId(UUID.randomUUID().toString())
@@ -36,6 +35,7 @@ public class ThreadedTimerImpl implements Timer {
 
     @Override
     public void start() {
+        threadRunner.start();
         isPaused = false;
         LOGGER.info("ThreadedTimerImpl has been started");
     }
@@ -44,6 +44,12 @@ public class ThreadedTimerImpl implements Timer {
     public void pause() {
         isPaused = true;
         LOGGER.info("ThreadedTimerImpl has been paused");
+    }
+
+    @Override
+    public void tcontinue() {
+        LOGGER.info("ThreadedTimerImpl has been continued");
+        isPaused = false;
     }
 
     @Override

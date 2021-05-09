@@ -7,5 +7,7 @@ public interface Timer {
 
     void pause();
 
+    void tcontinue();
+
     void end();
 }

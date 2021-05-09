@@ -5,12 +5,12 @@ import java.util.function.Consumer;
 import ru.etu.timer.dto.TimeContainer;
 import ru.etu.timer.dto.TimerData;
 
-public class StandardTimerEventListener implements TimerEventListener {
+public class ChainedTimerEventListener implements TimerEventListener {
 
     private final Consumer<TimeContainer> updateFn;
     private final Consumer<TimerData> finishFn;
 
-    public StandardTimerEventListener(Consumer<TimeContainer> updateFn, Consumer<TimerData> finishFn) {
+    public ChainedTimerEventListener(Consumer<TimeContainer> updateFn, Consumer<TimerData> finishFn) {
         this.updateFn = updateFn;
         this.finishFn = finishFn;
     }

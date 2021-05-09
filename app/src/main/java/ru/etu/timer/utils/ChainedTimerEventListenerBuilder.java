@@ -7,11 +7,11 @@ import java.util.function.Consumer;
 import ru.etu.timer.dto.TimeContainer;
 import ru.etu.timer.dto.TimerData;
 
-public class StandardTimerEventListenerBuilder implements TimerEventListenerBuilder {
+public class ChainedTimerEventListenerBuilder implements TimerEventListenerBuilder {
     private final List<Consumer<TimeContainer>> updateFunctions;
     private final List<Consumer<TimerData>> finishFunctions;
 
-    public StandardTimerEventListenerBuilder() {
+    public ChainedTimerEventListenerBuilder() {
         updateFunctions = new LinkedList<>();
         finishFunctions = new LinkedList<>();
     }
@@ -44,7 +44,7 @@ public class StandardTimerEventListenerBuilder implements TimerEventListenerBuil
 
     @Override
     public TimerEventListener build() {
-        return new StandardTimerEventListener(
+        return new ChainedTimerEventListener(
                 aggregateUpdateFunctions(),
                 aggregateFinishFunctions()
         );

@@ -9,11 +9,16 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
 
-import ru.etu.timer.service.storage.SharedPreferencesStorage;
+import ru.etu.timer.service.notifier.Notifier;
+import ru.etu.timer.service.notifier.SimpleOnFinishNotifier;
+import ru.etu.timer.ui.storage.SharedPreferencesStorage;
+import ru.etu.timer.service.storage.Storage;
 import ru.etu.timer.service.timer.Timer;
 import ru.etu.timer.service.timer.TimerFacade;
 import ru.etu.timer.dto.TimeContainer;
-import ru.etu.timer.utils.StandardTimerEventListenerBuilder;
+import ru.etu.timer.service.notifier.NotificationSender;
+import ru.etu.timer.ui.notifications.TimerOnFinishNotifier;
+import ru.etu.timer.utils.ChainedTimerEventListenerBuilder;
 import ru.etu.timer.utils.TimerEventListenerBuilder;
 import ru.etu.timer.viewmodel.TimerViewModel;
 import ru.etu.timer.viewmodel.TimerViewModelFactory;
@@ -21,13 +26,23 @@ import ru.etu.timer.viewmodel.TimerViewModelFactory;
 public class MainActivity extends AppCompatActivity {
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        TimerOnFinishNotifier.createChannel(this);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Context context = getApplicationContext();
-        SharedPreferences sh = context.getSharedPreferences("TimerHistory", Context.MODE_PRIVATE);
+
+        Storage storage = new SharedPreferencesStorage(this);
+
+        NotificationSender sender = new TimerOnFinishNotifier(this);
+
         TimerViewModel mView = new ViewModelProvider(this, new TimerViewModelFactory())
                 .get(TimerViewModel.class);
+
         TextView textArea = findViewById(R.id.tw);
         mView.getCurrentTimeOnClockLiveData().observe(this, timeContainer -> {
             textArea.setText(timeContainer.toFormattedString());
@@ -35,21 +50,21 @@ public class MainActivity extends AppCompatActivity {
 
         Button startButton = (Button) findViewById(R.id.startbtn);
         startButton.setOnClickListener(btn -> {
-            startTimer(sh, mView);
+            new Thread(() -> startTimer(storage, mView, sender)).start();
         });
     }
 
-    protected void startTimer(SharedPreferences sh, TimerViewModel mView) {
-        TimerEventListenerBuilder eventListenerBuilder = new StandardTimerEventListenerBuilder();
+    protected void startTimer(Storage storage, TimerViewModel mView, NotificationSender sender) {
+        TimerEventListenerBuilder eventListenerBuilder = new ChainedTimerEventListenerBuilder();
         eventListenerBuilder.onUpdate(mView::setCurrentTimeOnClock);
+        Notifier notifier = new SimpleOnFinishNotifier(sender);
 
-        Timer timer = new TimerFacade(new TimeContainer(23, 23, 59),
-                System.out::println,
-                new SharedPreferencesStorage(sh),
+        Timer timer = new TimerFacade(new TimeContainer(0, 0, 5),
+                notifier,
+                storage,
                 eventListenerBuilder
         );
         timer.start();
-
     }
 
 }

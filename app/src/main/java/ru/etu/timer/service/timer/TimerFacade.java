@@ -4,15 +4,17 @@ package ru.etu.timer.service.timer;
 import ru.etu.timer.dto.TimerData;
 import ru.etu.timer.service.notifier.Notifier;
 import ru.etu.timer.service.storage.Storage;
-import ru.etu.timer.utils.TimeContainer;
+import ru.etu.timer.dto.TimeContainer;
+import ru.etu.timer.utils.TimerEventListenerBuilder;
 
 public class TimerFacade implements Timer {
     private final Timer timer;
     private final Notifier notifier;
     private final Storage storage;
 
-    public TimerFacade(TimeContainer timeScheduled, Notifier notifier, Storage storage) {
-        this.timer = new StandardTimerImpl(timeScheduled.toSeconds(), this::finish);
+    public TimerFacade(TimeContainer timeScheduled, Notifier notifier, Storage storage, TimerEventListenerBuilder eventListener) {
+        eventListener.onFinish(this::finish);
+        this.timer = new StandardTimerImpl(timeScheduled.toSeconds(), eventListener.build());
         this.notifier = notifier;
         this.storage = storage;
     }

@@ -3,8 +3,6 @@ package ru.etu.timer;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
@@ -43,28 +41,54 @@ public class MainActivity extends AppCompatActivity {
         TimerViewModel mView = new ViewModelProvider(this, new TimerViewModelFactory())
                 .get(TimerViewModel.class);
 
-        TextView textArea = findViewById(R.id.tw);
+        TimeContainer timeScheduled = new TimeContainer(0, 0, 10);
+
+        TextView textArea = findViewById(R.id.timerValue);
         mView.getCurrentTimeOnClockLiveData().observe(this, timeContainer -> {
             textArea.setText(timeContainer.toFormattedString());
         });
 
+        TextView historyArea = findViewById(R.id.history);
+        mView.getCurrentHistoryLiveData().observe(this, historyList -> {
+            // needs to be sorted by end datetime
+            historyArea.setText(historyList.get(historyList.size() - 1).getId());
+        });
+
         Button startButton = (Button) findViewById(R.id.startbtn);
         startButton.setOnClickListener(btn -> {
-            new Thread(() -> startTimer(storage, mView, sender)).start();
+            Timer timer = createTimer(timeScheduled, storage, mView, sender);
+            mView.setCurrentWorkingTimer(timer);
+            timer.start();
+
         });
+
+        Button pauseButton = (Button) findViewById(R.id.pausebtn);
+        pauseButton.setOnClickListener(btn -> {
+            mView.getCurrentWorkingTimer().pause();
+        });
+
+        Button endButton = (Button) findViewById(R.id.endbtn);
+        endButton.setOnClickListener(btn -> {
+            mView.getCurrentWorkingTimer().end();
+            mView.setCurrentTimeOnClock(new TimeContainer(0));
+        });
+
     }
 
-    protected void startTimer(Storage storage, TimerViewModel mView, NotificationSender sender) {
+    protected Timer createTimer(TimeContainer timeScheduled, Storage storage, TimerViewModel mView, NotificationSender sender) {
         TimerEventListenerBuilder eventListenerBuilder = new ChainedTimerEventListenerBuilder();
         eventListenerBuilder.onUpdate(mView::setCurrentTimeOnClock);
+        eventListenerBuilder.onFinish(ignored -> {
+            mView.setCurrentHistory(storage.getHistory());
+        });
         Notifier notifier = new SimpleOnFinishNotifier(sender);
 
-        Timer timer = new TimerFacade(new TimeContainer(0, 0, 5),
+        return new TimerFacade(
+                timeScheduled,
                 notifier,
                 storage,
                 eventListenerBuilder
         );
-        timer.start();
     }
 
 }

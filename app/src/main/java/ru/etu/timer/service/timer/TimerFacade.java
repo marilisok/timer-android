@@ -14,7 +14,7 @@ public class TimerFacade implements Timer {
 
     public TimerFacade(TimeContainer timeScheduled, Notifier notifier, Storage storage, TimerEventListenerBuilder eventListener) {
         eventListener.onFinish(this::finish);
-        this.timer = new StandardTimerImpl(timeScheduled.toSeconds(), eventListener.build());
+        this.timer = new ThreadedTimerImpl(timeScheduled.toSeconds(), eventListener.build());
         this.notifier = notifier;
         this.storage = storage;
     }

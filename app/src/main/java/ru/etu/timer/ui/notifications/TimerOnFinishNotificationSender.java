@@ -10,12 +10,12 @@ import androidx.core.app.NotificationManagerCompat;
 import ru.etu.timer.R;
 import ru.etu.timer.service.notifier.NotificationSender;
 
-public class TimerOnFinishNotifier implements NotificationSender {
+public class TimerOnFinishNotificationSender implements NotificationSender {
     private final static String CHANNEL_ID = "TimerFinished";
     private final NotificationManagerCompat notificationManager;
     private NotificationCompat.Builder builder;
 
-    public TimerOnFinishNotifier(Context context) {
+    public TimerOnFinishNotificationSender(Context context) {
         notificationManager = NotificationManagerCompat.from(context);
         builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -37,7 +37,9 @@ public class TimerOnFinishNotifier implements NotificationSender {
         return (int) System.currentTimeMillis();
     }
 
-    public static void createChannel(Context context) {
+    @Override
+    public void createChannel(Object source) {
+        Context context = (Context) source;
         NotificationChannel channel = new NotificationChannel(
                 CHANNEL_ID,
                 "Timer notification on end",

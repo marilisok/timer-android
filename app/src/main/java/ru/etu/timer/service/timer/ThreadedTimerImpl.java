@@ -70,6 +70,7 @@ public class ThreadedTimerImpl implements Timer {
                 }
                 eventListener.update(new TimeContainer(secondsScheduled.get()));
             } catch (InterruptedException ignored) {
+                return;
             }
             isCompleted = true;
             end();

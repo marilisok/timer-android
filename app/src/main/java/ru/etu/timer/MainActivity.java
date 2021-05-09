@@ -6,17 +6,17 @@ import androidx.lifecycle.ViewModelProvider;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.widget.Button;
 import android.widget.TextView;
 
 import ru.etu.timer.service.storage.SharedPreferencesStorage;
 import ru.etu.timer.service.timer.Timer;
 import ru.etu.timer.service.timer.TimerFacade;
-import ru.etu.timer.utils.StandardTimerEventListener;
 import ru.etu.timer.dto.TimeContainer;
 import ru.etu.timer.utils.StandardTimerEventListenerBuilder;
-import ru.etu.timer.utils.TimerEventListener;
 import ru.etu.timer.utils.TimerEventListenerBuilder;
 import ru.etu.timer.viewmodel.TimerViewModel;
+import ru.etu.timer.viewmodel.TimerViewModelFactory;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,21 +26,30 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Context context = getApplicationContext();
         SharedPreferences sh = context.getSharedPreferences("TimerHistory", Context.MODE_PRIVATE);
-        TimerViewModel mView = new ViewModelProvider(this).get(TimerViewModel.class);
+        TimerViewModel mView = new ViewModelProvider(this, new TimerViewModelFactory())
+                .get(TimerViewModel.class);
         TextView textArea = findViewById(R.id.tw);
-        mView.getCurrentTimeOnClock().observe(this, timeContainer -> {
+        mView.getCurrentTimeOnClockLiveData().observe(this, timeContainer -> {
             textArea.setText(timeContainer.toFormattedString());
         });
 
+        Button startButton = (Button) findViewById(R.id.startbtn);
+        startButton.setOnClickListener(btn -> {
+            startTimer(sh, mView);
+        });
+    }
+
+    protected void startTimer(SharedPreferences sh, TimerViewModel mView) {
         TimerEventListenerBuilder eventListenerBuilder = new StandardTimerEventListenerBuilder();
         eventListenerBuilder.onUpdate(mView::setCurrentTimeOnClock);
 
-        Timer timer = new TimerFacade(new TimeContainer(0, 0, 20),
+        Timer timer = new TimerFacade(new TimeContainer(23, 23, 59),
                 System.out::println,
                 new SharedPreferencesStorage(sh),
                 eventListenerBuilder
         );
         timer.start();
+
     }
 
 }

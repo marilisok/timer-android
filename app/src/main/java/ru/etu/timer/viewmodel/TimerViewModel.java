@@ -4,12 +4,16 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import java.util.List;
+
 import ru.etu.timer.dto.TimeContainer;
+import ru.etu.timer.dto.TimerData;
 import ru.etu.timer.service.timer.Timer;
 
 public class TimerViewModel extends ViewModel {
     MutableLiveData<TimeContainer> currentTimeOnClock = new MutableLiveData<>();
     MutableLiveData<Timer> currentWorkingTimer = new MutableLiveData<>();
+    MutableLiveData<List<TimerData>> currentHistory = new MutableLiveData<>();
 
     public TimerViewModel() {
         currentTimeOnClock.setValue(new TimeContainer(0));
@@ -31,4 +35,11 @@ public class TimerViewModel extends ViewModel {
         return currentWorkingTimer.getValue();
     }
 
+    public LiveData<List<TimerData>> getCurrentHistoryLiveData() {
+        return currentHistory;
+    }
+
+    public void setCurrentHistory(List<TimerData> timerHistory) {
+        currentHistory.postValue(timerHistory);
+    }
 }

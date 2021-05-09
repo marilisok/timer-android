@@ -30,6 +30,11 @@ public class TimerFacade implements Timer {
         timer.pause();
     }
 
+    @Override
+    public void tcontinue() {
+        timer.tcontinue();
+    }
+
     private void finish(TimerData data) {
         storage.save(data);
         notifier.sendNotification(data);

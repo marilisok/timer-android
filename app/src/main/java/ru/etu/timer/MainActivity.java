@@ -4,12 +4,23 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.NumberPicker;
 import android.widget.TextView;
+
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
 import ru.etu.timer.di.components.DaggerContextComponent;
 import ru.etu.timer.di.modules.ContextModule;
+import ru.etu.timer.dto.TimerData;
 import ru.etu.timer.service.notifier.NotificationSender;
 import ru.etu.timer.service.notifier.Notifier;
 import ru.etu.timer.service.storage.Storage;
@@ -48,19 +59,45 @@ public class MainActivity extends AppCompatActivity {
 
         timerViewModel = new TimerViewModelFacade(this).get();
 
+
+        NumberPicker hoursPicker = findViewById(R.id.hoursPicker);
+        NumberPicker minutesPicker = findViewById(R.id.minutesPicker);
+        NumberPicker secondsPicker = findViewById(R.id.secondsPicker);
+        hoursPicker.setMinValue(0);
+        hoursPicker.setMaxValue(23);
+        minutesPicker.setMinValue(0);
+        minutesPicker.setMaxValue(59);
+        secondsPicker.setMinValue(0);
+        secondsPicker.setMaxValue(59);
         TextView textArea = findViewById(R.id.timerValue);
         this.timerViewModel.getCurrentTimeOnClockLiveData().observe(this, timeContainer -> {
             textArea.setText(timeContainer.toFormattedString());
+            hoursPicker.setValue(timeContainer.getHours());
+            minutesPicker.setValue(timeContainer.getMinutes());
+            secondsPicker.setValue(timeContainer.getSeconds());
+            hoursPicker.setEnabled(timeContainer.toSeconds() == 0);
+            minutesPicker.setEnabled(timeContainer.toSeconds() == 0);
+            secondsPicker.setEnabled(timeContainer.toSeconds() == 0);
         });
 
         TextView historyArea = findViewById(R.id.history);
         this.timerViewModel.getCurrentHistoryLiveData().observe(this, historyList -> {
-            historyArea.setText(historyList.get(historyList.size() - 1).getId());
+            List<String> history = new ArrayList<>();
+            historyList.sort((o1, o2) -> (int) (o1.getStartDateTime().toEpochSecond(ZoneOffset.UTC) - o2.getStartDateTime().toEpochSecond(ZoneOffset.UTC)));
+            for (TimerData element: historyList) {
+                history.add(element.getStartDateTime()
+                                    .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM))
+                            + " - " +
+                            element.getEndDateTime()
+                                    .format(DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM)));
+            }
+            historyArea.setText(String.join("\n", history));
         });
 
         Button startButton = (Button) findViewById(R.id.startbtn);
         startButton.setOnClickListener(btn -> {
-            Timer timer = createTimer(getTimeScheduled());
+            int time = hoursPicker.getValue() * 3600 + minutesPicker.getValue() * 60 + secondsPicker.getValue();
+            Timer timer = createTimer(new TimeContainer(time));
             this.timerViewModel.setCurrentWorkingTimer(timer);
             timer.start();
         });

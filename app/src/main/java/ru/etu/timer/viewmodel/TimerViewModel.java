@@ -9,11 +9,13 @@ import java.util.List;
 import ru.etu.timer.dto.TimeContainer;
 import ru.etu.timer.dto.TimerData;
 import ru.etu.timer.service.timer.Timer;
+import ru.etu.timer.ui.buttons.TimerControlledButtonGroup;
 
 public class TimerViewModel extends ViewModel {
     MutableLiveData<TimeContainer> currentTimeOnClock = new MutableLiveData<>();
     MutableLiveData<Timer> currentWorkingTimer = new MutableLiveData<>();
     MutableLiveData<List<TimerData>> currentHistory = new MutableLiveData<>();
+    MutableLiveData<TimerControlledButtonGroup.State> buttonsState = new MutableLiveData<>();
 
     public TimerViewModel() {
         currentTimeOnClock.setValue(new TimeContainer(0));
@@ -41,5 +43,13 @@ public class TimerViewModel extends ViewModel {
 
     public void setCurrentHistory(List<TimerData> timerHistory) {
         currentHistory.postValue(timerHistory);
+    }
+
+    public void setCurrentButtonsState(TimerControlledButtonGroup.State state) {
+        buttonsState.postValue(state);
+    }
+
+    public TimerControlledButtonGroup.State getButtonsState() {
+        return buttonsState.getValue();
     }
 }

@@ -32,43 +32,58 @@ public class TimerControlledButtonGroup {
         this.storage = storage;
         this.notifier = notifier;
         this.picker = picker;
+        initializeState(timerViewModel.getButtonsState());
     }
 
     public void startButtonPressed() {
         timerViewModel.setCurrentWorkingTimer(createTimer(new TimeContainer(picker.toSeconds())));
+        timerViewModel.setCurrentButtonsState(toggleStart());
         picker.hide();
-        startButton.hide();
-        pauseButton.show();
-        continueButton.hide();
-        endButton.show();
         timerViewModel.getCurrentWorkingTimer().start();
     }
 
     public void pauseButtonPressed() {
-        startButton.hide();
-        pauseButton.hide();
-        continueButton.show();
-        endButton.show();
+        timerViewModel.setCurrentButtonsState(togglePause());
         timerViewModel.getCurrentWorkingTimer().pause();
     }
 
     public void continueButtonPressed() {
-        startButton.hide();
-        pauseButton.show();
-        continueButton.hide();
-        endButton.show();
+        timerViewModel.setCurrentButtonsState(toggleStart());
         timerViewModel.getCurrentWorkingTimer().tcontinue();
     }
 
     public void endButtonPressed() {
-        startButton.show();
-        pauseButton.hide();
-        continueButton.hide();
-        endButton.hide();
+        timerViewModel.setCurrentButtonsState(toggleEnd());
         picker.show();
         timerViewModel.getCurrentWorkingTimer().end();
         timerViewModel.setCurrentTimeOnClock(new TimeContainer(0));
     }
+
+
+    private State toggleStart() {
+        startButton.hide();
+        pauseButton.show();
+        continueButton.hide();
+        endButton.show();
+        return State.WORKING;
+    }
+
+    private State togglePause() {
+        startButton.hide();
+        pauseButton.hide();
+        continueButton.show();
+        endButton.show();
+        return State.PAUSED;
+    }
+
+    private State toggleEnd() {
+        startButton.show();
+        pauseButton.hide();
+        continueButton.hide();
+        endButton.hide();
+        return State.INIT;
+    }
+
 
     Timer createTimer(TimeContainer timeScheduled) {
         TimerEventListenerBuilder eventListenerBuilder = new ChainedTimerEventListenerBuilder();
@@ -83,5 +98,24 @@ public class TimerControlledButtonGroup {
                 storage,
                 eventListenerBuilder
         );
+    }
+
+    public void initializeState(State state) {
+        if (state == null) {
+            timerViewModel.setCurrentButtonsState(toggleEnd());
+            return;
+        }
+
+        switch (state) {
+            case PAUSED:
+                togglePause();
+                break;
+            case WORKING:
+                toggleStart();
+        }
+    }
+
+    public enum State {
+        INIT, WORKING, PAUSED
     }
 }

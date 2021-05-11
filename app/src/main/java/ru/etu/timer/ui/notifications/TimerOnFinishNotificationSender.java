@@ -44,12 +44,15 @@ public class TimerOnFinishNotificationSender implements NotificationSender {
     @Override
     public void createChannel(Object source) {
         Context context = (Context) source;
+        NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
+        if (notificationManager.getNotificationChannel(CHANNEL_ID) != null)
+            return;
+
         NotificationChannel channel = new NotificationChannel(
                 CHANNEL_ID,
                 "Timer notification on end",
                 NotificationManager.IMPORTANCE_HIGH
         );
-        NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
         notificationManager.createNotificationChannel(channel);
         LOGGER.info(String.format("Channel %s has been created", CHANNEL_ID));
     }

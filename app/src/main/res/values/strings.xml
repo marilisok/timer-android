@@ -4,4 +4,5 @@
     <string name="timerEndedMessage">Timer has ended</string>
     <string name="pauseTimer">Pause</string>
     <string name="endTimer">End</string>
+    <string name="continueTimer">Continue</string>
 </resources>

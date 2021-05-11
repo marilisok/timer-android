@@ -13,7 +13,7 @@ import ru.etu.timer.ui.storage.SharedPreferencesStorage;
 public class StorageModule {
     @Provides
     @Singleton
-    Storage provideNotificationSender(Context context) {
+    Storage provideStorage(Context context) {
         return new SharedPreferencesStorage(context);
     }
 }

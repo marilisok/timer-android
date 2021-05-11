@@ -4,13 +4,15 @@ import android.view.View;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveData;
 
 import java.util.logging.Logger;
 
+import ru.etu.timer.dto.TimeContainer;
 import ru.etu.timer.ui.SubscribedElement;
 
-public abstract class TimerBaseButton implements ControlledButton, SubscribedElement {
+public abstract class TimerBaseButton implements ControlledButton, SubscribedElement<TimeContainer> {
     protected static int SELECTOR;
     protected static String NAME;
     protected final TimerControlledButtonGroup observer;
@@ -51,6 +53,6 @@ public abstract class TimerBaseButton implements ControlledButton, SubscribedEle
     }
 
     @Override
-    public void subscribe(LiveData<?> observer) {
+    public void subscribe(LifecycleOwner owner, LiveData<TimeContainer> observer) {
     }
 }

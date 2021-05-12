@@ -14,7 +14,7 @@
 
 и вот так
 
-![](https://imgur.com/ih8802Q)
+![](https://imgur.com/ih8802Q.jpg)
 
 ## Баги
 Список известных проблем приведен в issues.

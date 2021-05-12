@@ -2,19 +2,22 @@ package ru.etu.timer.ui.buttons;
 
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.LiveData;
 
 import ru.etu.timer.dto.TimeContainer;
 import ru.etu.timer.service.notifier.Notifier;
 import ru.etu.timer.service.storage.Storage;
 import ru.etu.timer.service.timer.Timer;
 import ru.etu.timer.service.timer.TimerFacade;
+import ru.etu.timer.ui.SubscribedElement;
 import ru.etu.timer.ui.pickers.TimeNumberPicker;
 import ru.etu.timer.ui.progressBar.CircularProgressBar;
 import ru.etu.timer.utils.ChainedTimerEventListenerBuilder;
 import ru.etu.timer.utils.TimerEventListenerBuilder;
 import ru.etu.timer.viewmodel.TimerViewModel;
 
-public class TimerControlledButtonGroup {
+public class TimerControlledButtonGroup implements SubscribedElement<TimeContainer> {
     private final TimerStartButton startButton;
     private final TimerContinueButton continueButton;
     private final TimerPauseButton pauseButton;
@@ -119,6 +122,15 @@ public class TimerControlledButtonGroup {
             case WORKING:
                 toggleStart();
         }
+    }
+
+    @Override
+    public void subscribe(LifecycleOwner owner, LiveData<TimeContainer> observer) {
+        observer.observe(owner, timeContainer -> {
+            if (timeContainer.toSeconds() == 0) {
+                toggleEnd();
+            }
+        });
     }
 
     public enum State {

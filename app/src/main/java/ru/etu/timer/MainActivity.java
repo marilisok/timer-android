@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
         TimerControlledButtonGroup timerControlledButtonGroup = new TimerControlledButtonGroup(
                 this, timerViewModel, storage, notifier, timeNumberPicker, progressBar
         );
+        timerControlledButtonGroup.subscribe(this, timerViewModel.getCurrentTimeOnClockLiveData());
 
         TimerValueArea textArea = new TimerValueArea(this);
         textArea.subscribe(this, timerViewModel.getCurrentTimeOnClockLiveData());

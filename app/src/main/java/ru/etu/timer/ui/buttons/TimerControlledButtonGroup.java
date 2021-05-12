@@ -9,6 +9,7 @@ import ru.etu.timer.service.storage.Storage;
 import ru.etu.timer.service.timer.Timer;
 import ru.etu.timer.service.timer.TimerFacade;
 import ru.etu.timer.ui.pickers.TimeNumberPicker;
+import ru.etu.timer.ui.progressBar.CircularProgressBar;
 import ru.etu.timer.utils.ChainedTimerEventListenerBuilder;
 import ru.etu.timer.utils.TimerEventListenerBuilder;
 import ru.etu.timer.viewmodel.TimerViewModel;
@@ -22,8 +23,9 @@ public class TimerControlledButtonGroup {
     private final Storage storage;
     private final Notifier notifier;
     private final TimeNumberPicker picker;
+    private final CircularProgressBar progressBar;
 
-    public TimerControlledButtonGroup(AppCompatActivity context, TimerViewModel timerViewModel, Storage storage, Notifier notifier, TimeNumberPicker picker){
+    public TimerControlledButtonGroup(AppCompatActivity context, TimerViewModel timerViewModel, Storage storage, Notifier notifier, TimeNumberPicker picker, CircularProgressBar progressBar){
         startButton = new TimerStartButton(context, this);
         pauseButton = new TimerPauseButton(context, this);
         continueButton = new TimerContinueButton(context, this);
@@ -32,13 +34,14 @@ public class TimerControlledButtonGroup {
         this.storage = storage;
         this.notifier = notifier;
         this.picker = picker;
+        this.progressBar = progressBar;
         initializeState(timerViewModel.getButtonsState());
     }
 
     public void startButtonPressed() {
         timerViewModel.setCurrentWorkingTimer(createTimer(new TimeContainer(picker.toSeconds())));
         timerViewModel.setCurrentButtonsState(toggleStart());
-        picker.hide();
+        progressBar.setTimerTime(picker.toSeconds());
         timerViewModel.getCurrentWorkingTimer().start();
     }
 
@@ -54,13 +57,14 @@ public class TimerControlledButtonGroup {
 
     public void endButtonPressed() {
         timerViewModel.setCurrentButtonsState(toggleEnd());
-        picker.show();
         timerViewModel.getCurrentWorkingTimer().end();
         timerViewModel.setCurrentTimeOnClock(new TimeContainer(0));
     }
 
 
     private State toggleStart() {
+        picker.hide();
+        progressBar.show();
         startButton.hide();
         pauseButton.show();
         continueButton.hide();
@@ -77,6 +81,8 @@ public class TimerControlledButtonGroup {
     }
 
     private State toggleEnd() {
+        progressBar.hide();
+        picker.show();
         startButton.show();
         pauseButton.hide();
         continueButton.hide();

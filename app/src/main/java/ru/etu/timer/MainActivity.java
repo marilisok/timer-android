@@ -3,6 +3,7 @@ package ru.etu.timer;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.time.ZoneOffset;
@@ -22,6 +23,7 @@ import ru.etu.timer.service.storage.Storage;
 import ru.etu.timer.ui.buttons.TimerControlledButtonGroup;
 import ru.etu.timer.ui.formatters.TimerHistoryFormatter;
 import ru.etu.timer.ui.pickers.TimeNumberPicker;
+import ru.etu.timer.ui.progressBar.CircularProgressBar;
 import ru.etu.timer.ui.textviews.TimerHistoryArea;
 import ru.etu.timer.ui.textviews.TimerValueArea;
 import ru.etu.timer.viewmodel.TimerViewModel;
@@ -49,9 +51,13 @@ public class MainActivity extends AppCompatActivity {
         sender.createChannel(this);
         timerViewModel = new TimerViewModelFacade(this).get();
 
+
+        CircularProgressBar progressBar = new CircularProgressBar(this);
+        progressBar.subscribe(this, timerViewModel.getCurrentTimeOnClockLiveData());
+
         TimeNumberPicker timeNumberPicker = new TimeNumberPicker(this);
         TimerControlledButtonGroup timerControlledButtonGroup = new TimerControlledButtonGroup(
-                this, timerViewModel, storage, notifier, timeNumberPicker
+                this, timerViewModel, storage, notifier, timeNumberPicker, progressBar
         );
 
         TimerValueArea textArea = new TimerValueArea(this);
@@ -61,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
                 this, storage, new TimerHistoryFormatter()
         );
         timerHistoryArea.subscribe(this, timerViewModel.getCurrentHistoryLiveData());
+
     }
 
     private void makeInjection() {

@@ -1,9 +1,11 @@
 package ru.etu.timer.ui.pickers;
 
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.NumberPicker;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.Group;
 
 import ru.etu.timer.R;
 
@@ -11,13 +13,16 @@ public class TimeNumberPicker {
     private final NumberPicker hoursPicker;
     private final NumberPicker minutesPicker;
     private final NumberPicker secondsPicker;
+    private final ViewGroup pickerGroup;
 
     public TimeNumberPicker(AppCompatActivity context) {
         hoursPicker = context.findViewById(R.id.hoursPicker);
         minutesPicker = context.findViewById(R.id.minutesPicker);
         secondsPicker = context.findViewById(R.id.secondsPicker);
+        pickerGroup = context.findViewById(R.id.pickerGroup);
         setBoundaryValues();
         setDefault();
+        show();
     }
 
     private void setBoundaryValues() {
@@ -40,14 +45,10 @@ public class TimeNumberPicker {
     }
 
     public void hide() {
-        hoursPicker.setVisibility(View.INVISIBLE);
-        minutesPicker.setVisibility(View.INVISIBLE);
-        secondsPicker.setVisibility(View.INVISIBLE);
+        pickerGroup.setVisibility(View.INVISIBLE);
     }
 
     public void show() {
-        hoursPicker.setVisibility(View.VISIBLE);
-        minutesPicker.setVisibility(View.VISIBLE);
-        secondsPicker.setVisibility(View.VISIBLE);
+        pickerGroup.setVisibility(View.VISIBLE);
     }
 }

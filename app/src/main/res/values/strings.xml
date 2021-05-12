@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Timer</string>
+    <string name="startTimer">Start</string>
+    <string name="timerEndedMessage">Timer has ended</string>
+    <string name="pauseTimer">Pause</string>
+    <string name="endTimer">Reset</string>
+    <string name="continueTimer">Continue</string>
+    <string name="seconds">sec</string>
+    <string name="minutes">min</string>
+    <string name="hours">hours</string>
+</resources>
